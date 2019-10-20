@@ -7,12 +7,12 @@ option = {
     'model': 'cfg/yolo.cfg',
     'load': 'bin/yolo.weights',
     'threshold': 0.15,
-    'gpu': 1.0
+    'gpu': 0.75
 }
 
 tfnet = TFNet(option)
 
-capture = cv2.VideoCapture('testvideo.mp4')
+capture = cv2.VideoCapture('sample1.mp4')
 colors = [tuple(255 * np.random.rand(3)) for i in range(5)]
 
 while (capture.isOpened()):

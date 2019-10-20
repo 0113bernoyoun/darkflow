@@ -1,4 +1,7 @@
+
 import tensorflow.contrib.slim as slim
+#import tensorflow.contrib.tensorrt as slim
+#from tensorflow.python.compiler.tensorrt import trt_convert as slim
 from .baseop import BaseOp
 import tensorflow as tf
 from distutils.version import StrictVersion

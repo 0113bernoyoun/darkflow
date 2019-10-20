@@ -8,11 +8,11 @@ options = {
     'model': 'cfg/yolo.cfg',
     'load': 'bin/yolo.weights',
     'threshold': 0.3,
-    'gpu': 1.0
+    'gpu': 0.5
 }
 
 tfnet = TFNet(options)
-
+print("sdfsfssssssss")
 # read the color image and covert to RGB
 
 img = cv2.imread('dog.png', cv2.IMREAD_COLOR)

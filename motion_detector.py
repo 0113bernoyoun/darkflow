@@ -4,13 +4,18 @@ import cv2 as open_cv
 import numpy as np
 import logging
 from drawing_utils import draw_contours
-from colors import COLOR_GREEN, COLOR_WHITE, COLOR_BLUE
+from colors import COLOR_GREEN, COLOR_WHITE, COLOR_BLUE, COLOR_RED
 
 import cv2
 from darkflow.net.build import TFNet
 import numpy as np
 import time
 from datetime import datetime
+import socketserver
+import socket
+import sys
+import threading
+
 option = {
     'model': 'cfg/yolo.cfg',
     'load': 'bin/yolo.weights',
@@ -21,6 +26,14 @@ option = {
 tfnet = TFNet(option)
 f = open("CarData.txt", 'w')
 f.close()
+
+
+rbuff = ''
+
+
+#result = None
+#frame = None
+#capture = None
 class MotionDetector:
     LAPLACIAN = 1.4
     DETECT_DELAY = 1
@@ -34,6 +47,7 @@ class MotionDetector:
         self.mask = []
 
     def detect_motion(self):
+        parking_index = list()
         #video_url = "C:/Users/YHJ/PycharmProjects/parkingLot/DetectParking-develop/ParkingLot-master/parking_lot/videos/parking_lot_1.mp4"
         #capture = open_cv.VideoCapture(video_url)
         #capture = open_cv.VideoCapture(self.video)
@@ -77,30 +91,39 @@ class MotionDetector:
 
         capture = cv2.VideoCapture('sample1.mp4')
         colors = [tuple(255 * np.random.rand(3)) for i in range(5)]
+        print("colors : ",colors)
         cnt = 0
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(('localhost', 9876))
         while capture.isOpened():
-            cnt+=1
-            stime = time.time()
 
-            print("ooooo")
+
+            #cnt+=1
+            cnt = 1
+            stime = time.time()
+         #   now1 = datetime.now()
+           # past_sec = now1.second()
+          #  print("ooooo")
             result, frame = capture.read()
             if result:
                 results = tfnet.return_predict(frame)
                 for color, result in zip(colors, results):
+                #for result in results :
                     label = result['label']
-                    if cnt == 7:
+                    if cnt == 1:
+                    #if now1.second
                         if label == "car" or label == "truck" :
                             tl = (result['topleft']['x'], result['topleft']['y'])
                             br = (result['bottomright']['x'], result['bottomright']['y'])
                             x = (result['bottomright']['x'] - result['topleft']['x']) / 2
-                            y = (result['topleft']['y'] - result['bottomright']['y']) / 2
+                            y = (result['bottomright']['y'] - result['topleft']['y']) / 2
                             x_y = (x,y)
                             now = datetime.now()
                             time_str = "종류 : " + str(label) + "\n시간 : "+ str(now.hour) +"시 " + str(now.minute) + "분 " + str(now.second) + "초\n" +"객체좌표 : " + str(x_y) + "\n\n\n"
                             f = open("CarData.txt", 'a',encoding='utf-8')
                             f.write(time_str)
                             f.close()
-                            cnt = 0
+                #cnt = 0
             if frame is None:
                 break
             if not result:
@@ -128,19 +151,39 @@ class MotionDetector:
 
                 if times[index] is None and self.status_changed(statuses, index, status):
                     times[index] = position_in_seconds
-
+            global rbuff
+            #temp_str = ""
+            rbuff = ""
             for index, p in enumerate(coordinates_data):
                 coordinates = self._coordinates(p)
-
-                color = COLOR_GREEN if statuses[index] else COLOR_BLUE
+                if statuses[index]:
+                    color = COLOR_GREEN
+                    #temp_str = temp_str + str(int(index)+1) + "1"
+                    #rbuff = rbuff + str(int(index)+1) + "1"
+                    rbuff = rbuff + "0"
+                else :
+                    color = COLOR_RED
+                    #temp_str = temp_str + str(int(index)+1) + "0"
+                    #rbuff = rbuff + str(int(index) + 1) + "0"
+                    rbuff = rbuff +"1"
+                #color = COLOR_GREEN if statuses[index] else COLOR_RED
+                sock.send(rbuff.encode(encoding='utf-8'))
                 draw_contours(new_frame, coordinates, str(p["id"] + 1), COLOR_WHITE, color)
 
+
+
+
             open_cv.imshow("hello guys", new_frame)
+
+            print(rbuff)
             k = open_cv.waitKey(20)
             if k == ord("q"):
+
                 break
+
         capture.release()
         open_cv.destroyAllWindows()
+
 
     def __apply(self, grayed, index, p):
         coordinates = self._coordinates(p)

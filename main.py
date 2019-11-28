@@ -2,7 +2,7 @@ import argparse
 import yaml
 from coordinates_generator import CoordinatesGenerator
 from motion_detector import MotionDetector
-from colors import *
+from colors import COLOR_RED
 import logging
 import cv2
 
@@ -29,6 +29,7 @@ def main():
 
     if image_file is not None:
         with open(data_file, "w+") as points:
+
             generator = CoordinatesGenerator(test_image, points, COLOR_RED)
             generator.generate()
 

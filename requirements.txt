@@ -2,6 +2,6 @@ numpy
 matplotlib
 cython
 opencv-python
-tensorflow-gpu
+tensorflow-gpu==1.3.0
 icrawler
 lxml
